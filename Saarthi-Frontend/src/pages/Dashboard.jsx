@@ -4,6 +4,7 @@ import { ArrowRight, MapPin, Clock } from 'lucide-react';
 import { StatsCards } from '../components/StatsCards';
 import { useAlertsStore } from '../store/alertsStore';
 import { useToastStore } from '../store/toastStore';
+import { useAudioAlert } from '../hooks/useAudioAlert';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -15,6 +16,7 @@ import { EMERGENCY_TYPES, CROWD_DENSITY_ZONES } from '../lib/mockData';
 export function Dashboard() {
     const { alerts, simulateNewAlert, isSimulating, isLoading } = useAlertsStore();
     const { addToast } = useToastStore();
+    const { playAlert } = useAudioAlert();
 
     useEffect(() => {
         if (!isSimulating || isLoading) return;
@@ -29,26 +31,27 @@ export function Dashboard() {
                     message: `${type?.label || 'Emergency'} near ${newAlert.location_name}`,
                     duration: 6000,
                 });
+                playAlert(newAlert.priority);
             }
         }, 10000);
 
         return () => clearInterval(interval);
-    }, [isSimulating, isLoading, simulateNewAlert, addToast]);
+    }, [isSimulating, isLoading, simulateNewAlert, addToast, playAlert]);
 
     const recentAlerts = alerts.slice(0, 5);
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
             <div>
-                <h1 className="text-xl font-bold text-white tracking-tight">Dashboard Overview</h1>
-                <p className="text-xs text-slate-500 mt-0.5">Real-time emergency monitoring for Simhastha 2028</p>
+                <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Real-time emergency monitoring for Simhastha 2028</p>
             </div>
 
             <StatsCards />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
                 <Card className="lg:col-span-2 overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
+                    <CardHeader className="flex flex-row items-center justify-between py-3 px-3 sm:px-4">
                         <CardTitle>Recent Alerts</CardTitle>
                         <Link to="/incidents">
                             <Button variant="ghost" size="sm" className="h-7 text-[11px] text-slate-500 hover:text-slate-300">
@@ -77,35 +80,35 @@ export function Dashboard() {
                                     return (
                                         <div
                                             key={alert.id}
-                                            className={`p-3 hover:bg-white/[0.02] transition-colors animate-fadeIn stagger-${index + 1}`}
+                                            className={`p-2.5 sm:p-3 hover:bg-white/[0.02] transition-colors animate-fadeIn stagger-${index + 1}`}
                                         >
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                            <div className="flex items-center justify-between gap-2 sm:gap-3">
+                                                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
                                                     <div
-                                                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                                                         style={{ backgroundColor: `${emergencyType?.color}12` }}
                                                     >
                                                         <span
-                                                            className="w-2.5 h-2.5 rounded-full"
+                                                            className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full"
                                                             style={{ backgroundColor: emergencyType?.color }}
                                                         />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-[13px] font-medium text-slate-200 truncate">
+                                                        <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 flex-wrap">
+                                                            <span className="text-xs sm:text-[13px] font-medium text-slate-200 truncate">
                                                                 {emergencyType?.label || 'Emergency'}
                                                             </span>
                                                             <Badge variant={alert.priority}>{alert.priority}</Badge>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                                                        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-500">
                                                             <MapPin className="w-3 h-3 flex-shrink-0" />
                                                             <span className="truncate">{alert.location_name}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
-                                                    <Badge variant={alert.status}>{alert.status.replace('_', ' ')}</Badge>
-                                                    <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-600 justify-end font-mono">
+                                                    <Badge variant={alert.status} className="hidden sm:inline-flex">{alert.status.replace('_', ' ')}</Badge>
+                                                    <div className="flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] text-slate-600 justify-end font-mono">
                                                         <Clock className="w-2.5 h-2.5" />
                                                         {formatRelativeTime(alert.timestamp)}
                                                     </div>
@@ -120,7 +123,7 @@ export function Dashboard() {
                 </Card>
 
                 <Card className="overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
+                    <CardHeader className="flex flex-row items-center justify-between py-3 px-3 sm:px-4">
                         <CardTitle>Crowd Density</CardTitle>
                         <Link to="/map">
                             <Button variant="ghost" size="sm" className="h-7 text-[11px] text-slate-500 hover:text-slate-300">
@@ -128,7 +131,7 @@ export function Dashboard() {
                             </Button>
                         </Link>
                     </CardHeader>
-                    <CardContent className="space-y-3 p-4 pt-2">
+                    <CardContent className="space-y-3 p-3 sm:p-4 pt-2">
                         {isLoading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <SkeletonDensityBar key={i} />
@@ -164,9 +167,9 @@ export function Dashboard() {
                 </Card>
             </div>
 
-            <div className="rounded-xl bg-[hsl(225,20%,10%)]/50 border border-white/[0.04] p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                    <div className="flex items-center gap-4">
+            <div className="rounded-xl bg-[hsl(225,20%,10%)]/50 border border-white/[0.04] p-2.5 sm:p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px]">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-statusPulse" />
                             <span className="text-slate-500">System Active</span>
@@ -176,7 +179,7 @@ export function Dashboard() {
                             {alerts.filter(a => a.status !== 'resolved').length} alerts monitored
                         </span>
                     </div>
-                    <span className="text-slate-700 font-mono uppercase tracking-wider text-[10px]">
+                    <span className="text-slate-700 font-mono uppercase tracking-wider text-[9px] sm:text-[10px]">
                         Demo • Auto-simulation
                     </span>
                 </div>

@@ -2,12 +2,14 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area
 } from 'recharts';
-import { TrendingUp, Users, Clock, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Users, Clock, AlertTriangle, FileText, FileSpreadsheet } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { useAlertsStore } from '../store/alertsStore';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 import { SkeletonStatsCard, SkeletonChart } from '../components/ui/Skeleton';
 import { ANALYTICS_DATA, EMERGENCY_TYPES, CROWD_DENSITY_ZONES } from '../lib/mockData';
+import { exportAnalyticsToPDF, exportToCSV } from '../lib/exportUtils';
 
 const chartTooltipStyle = {
     backgroundColor: 'hsl(225, 20%, 10%)',
@@ -37,11 +39,41 @@ export function Analytics() {
         { title: 'Volunteers', value: 340, icon: Users, gradient: 'from-purple-500/10 to-purple-600/5', ring: 'ring-purple-500/15', iconBg: 'bg-purple-500/15', iconColor: 'text-purple-400' },
     ];
 
+    const handleExportPDF = () => {
+        exportAnalyticsToPDF(ANALYTICS_DATA, quickStats.map(s => ({
+            title: s.title,
+            value: s.isText ? s.value : `${s.value}${s.suffix || ''}`,
+        })));
+    };
+
+    const handleExportCSV = () => {
+        const data = ANALYTICS_DATA.alertsByType.map(t => ({
+            name: t.name,
+            value: t.value,
+        }));
+        exportToCSV(data, 'analytics_alerts_by_type', [
+            { label: 'Type', accessor: 'name' },
+            { label: 'Count', accessor: 'value' },
+        ]);
+    };
+
     return (
-        <div className="space-y-5">
-            <div>
-                <h1 className="text-xl font-bold text-white tracking-tight">Analytics & Insights</h1>
-                <p className="text-xs text-slate-500 mt-0.5">Data-driven overview of emergency response</p>
+        <div className="space-y-4 sm:space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Analytics & Insights</h1>
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Data-driven overview of emergency response</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleExportCSV} title="Export CSV">
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">CSV</span>
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleExportPDF} title="Export PDF">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">PDF</span>
+                    </Button>
+                </div>
             </div>
 
             {isLoading ? (
@@ -51,18 +83,18 @@ export function Analytics() {
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                     {quickStats.map((stat, index) => (
-                        <div key={stat.title} className={`rounded-xl bg-gradient-to-br ${stat.gradient} ring-1 ${stat.ring} p-4 animate-fadeIn stagger-${index + 1}`}>
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2.5 ${stat.iconBg} rounded-xl`}>
-                                    <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+                        <div key={stat.title} className={`rounded-xl bg-gradient-to-br ${stat.gradient} ring-1 ${stat.ring} p-3 sm:p-4 animate-fadeIn stagger-${index + 1}`}>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className={`p-2 sm:p-2.5 ${stat.iconBg} rounded-xl`}>
+                                    <stat.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${stat.iconColor}`} />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                    <p className="text-xl sm:text-2xl font-bold text-white tabular-nums tracking-tight">
                                         {stat.isText ? stat.value : <AnimatedValue value={stat.value} suffix={stat.suffix || ''} />}
                                     </p>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{stat.title}</p>
+                                    <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{stat.title}</p>
                                 </div>
                             </div>
                         </div>
@@ -70,22 +102,22 @@ export function Analytics() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>Alerts by Type</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? <SkeletonChart /> : (
-                            <div className="h-[280px]">
+                            <div className="h-[240px] sm:h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={ANALYTICS_DATA.alertsByType}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={55}
-                                            outerRadius={90}
+                                            innerRadius={40}
+                                            outerRadius={70}
                                             paddingAngle={3}
                                             dataKey="value"
                                             strokeWidth={0}
@@ -96,8 +128,8 @@ export function Analytics() {
                                         </Pie>
                                         <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartItemStyle} />
                                         <Legend
-                                            wrapperStyle={{ paddingTop: '16px' }}
-                                            formatter={(value) => <span style={{ color: '#64748b', fontSize: '11px' }}>{value}</span>}
+                                            wrapperStyle={{ paddingTop: '12px' }}
+                                            formatter={(value) => <span style={{ color: '#64748b', fontSize: '10px' }}>{value}</span>}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -112,7 +144,7 @@ export function Analytics() {
                     </CardHeader>
                     <CardContent>
                         {isLoading ? <SkeletonChart /> : (
-                            <div className="h-[280px]">
+                            <div className="h-[240px] sm:h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={ANALYTICS_DATA.alertsTrend}>
                                         <defs>
@@ -122,8 +154,8 @@ export function Analytics() {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                        <XAxis dataKey="hour" stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} interval={3} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
+                                        <XAxis dataKey="hour" stroke="#334155" tick={{ fill: '#475569', fontSize: 9 }} interval={4} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#334155" tick={{ fill: '#475569', fontSize: 9 }} tickLine={false} axisLine={false} />
                                         <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartItemStyle} />
                                         <Area type="monotone" dataKey="alerts" stroke="#ef4444" fill="url(#alertsGradient)" strokeWidth={2} />
                                     </AreaChart>
@@ -139,12 +171,12 @@ export function Analytics() {
                     </CardHeader>
                     <CardContent>
                         {isLoading ? <SkeletonChart /> : (
-                            <div className="h-[280px]">
+                            <div className="h-[240px] sm:h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={ANALYTICS_DATA.responseTimesTrend}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                        <XAxis dataKey="date" stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} unit="m" tickLine={false} axisLine={false} />
+                                        <XAxis dataKey="date" stroke="#334155" tick={{ fill: '#475569', fontSize: 9 }} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#334155" tick={{ fill: '#475569', fontSize: 9 }} unit="m" tickLine={false} axisLine={false} />
                                         <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartItemStyle} formatter={(value) => [`${value} min`, 'Avg Response']} />
                                         <Line type="monotone" dataKey="avgTime" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: '#3b82f6', stroke: '#1e3a5f', strokeWidth: 2 }} />
                                     </LineChart>
@@ -160,12 +192,12 @@ export function Analytics() {
                     </CardHeader>
                     <CardContent>
                         {isLoading ? <SkeletonChart /> : (
-                            <div className="h-[280px]">
+                            <div className="h-[240px] sm:h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={CROWD_DENSITY_ZONES} layout="vertical" margin={{ left: 20 }}>
+                                    <BarChart data={CROWD_DENSITY_ZONES} layout="vertical" margin={{ left: 10 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                        <XAxis type="number" stroke="#334155" tick={{ fill: '#475569', fontSize: 10 }} domain={[0, 100]} tickLine={false} axisLine={false} />
-                                        <YAxis type="category" dataKey="name" stroke="#334155" tick={{ fill: '#64748b', fontSize: 10 }} width={110} tickLine={false} axisLine={false} />
+                                        <XAxis type="number" stroke="#334155" tick={{ fill: '#475569', fontSize: 9 }} domain={[0, 100]} tickLine={false} axisLine={false} />
+                                        <YAxis type="category" dataKey="name" stroke="#334155" tick={{ fill: '#64748b', fontSize: 9 }} width={90} tickLine={false} axisLine={false} />
                                         <Tooltip contentStyle={chartTooltipStyle} itemStyle={chartItemStyle} formatter={(value) => [`${value}%`, 'Density']} />
                                         <Bar dataKey="density" fill="#f59e0b" radius={[0, 4, 4, 0]}>
                                             {CROWD_DENSITY_ZONES.map((entry, index) => (

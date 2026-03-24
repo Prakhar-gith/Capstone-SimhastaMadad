@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import L from 'leaflet';
 import { Icon, divIcon } from 'leaflet';
 import { Filter, Layers, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import { useAlertsStore } from '../store/alertsStore';
@@ -10,6 +11,7 @@ import { Badge } from '../components/ui/Badge';
 import { formatRelativeTime } from '../lib/utils';
 import { UJJAIN_CENTER, EMERGENCY_TYPES, CROWD_DENSITY_ZONES } from '../lib/mockData';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 
 delete Icon.Default.prototype._getIconUrl;
 Icon.Default.mergeOptions({
@@ -100,6 +102,42 @@ function createClusterIcon(cluster) {
     });
 }
 
+function HeatmapLayer({ zones }) {
+    const map = useMap();
+
+    useEffect(() => {
+        const points = [];
+        zones.forEach(zone => {
+            const intensity = zone.density / 100;
+            for (let i = 0; i < Math.ceil(zone.density / 5); i++) {
+                const lat = zone.lat + (Math.random() - 0.5) * 0.008;
+                const lng = zone.lng + (Math.random() - 0.5) * 0.008;
+                points.push([lat, lng, intensity]);
+            }
+        });
+
+        const heat = L.heatLayer(points, {
+            radius: 35,
+            blur: 25,
+            maxZoom: 17,
+            max: 1.0,
+            gradient: {
+                0.2: '#22c55e',
+                0.4: '#eab308',
+                0.6: '#f97316',
+                0.8: '#ef4444',
+                1.0: '#dc2626',
+            },
+        }).addTo(map);
+
+        return () => {
+            map.removeLayer(heat);
+        };
+    }, [map, zones]);
+
+    return null;
+}
+
 function MapControls() {
     const map = useMap();
 
@@ -136,11 +174,11 @@ export function LiveMap() {
     const onlineVolunteers = volunteers.filter(v => v.status !== 'offline');
 
     return (
-        <div className="space-y-4 h-[calc(100vh-8rem)]">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="space-y-3 sm:space-y-4 h-[calc(100vh-8rem)]">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                 <div>
-                    <h1 className="text-xl font-bold text-white tracking-tight">Live Map</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">Real-time view of Simhastha grounds</p>
+                    <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Live Map</h1>
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Real-time view of Simhastha grounds</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -149,23 +187,23 @@ export function LiveMap() {
                         onClick={() => setShowFilters(!showFilters)}
                     >
                         <Filter className="w-3.5 h-3.5" />
-                        Filters
+                        <span className="hidden sm:inline">Filters</span>
                     </Button>
                     <Button variant="outline" size="sm">
                         <Layers className="w-3.5 h-3.5" />
-                        Layers
+                        <span className="hidden sm:inline">Layers</span>
                     </Button>
                 </div>
             </div>
 
             {showFilters && (
                 <Card className="animate-fadeIn">
-                    <CardContent className="py-3 px-4">
-                        <div className="flex flex-wrap items-center gap-5">
+                    <CardContent className="py-3 px-3 sm:px-4">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-5">
                             {[
                                 { label: 'Alerts', count: activeAlerts.length, color: 'bg-red-500', key: 'showAlerts' },
                                 { label: 'Volunteers', count: onlineVolunteers.length, color: 'bg-blue-500', key: 'showVolunteers' },
-                                { label: 'Crowd Density', color: 'bg-yellow-500', key: 'showHeatmap' },
+                                { label: 'Heatmap', color: 'bg-yellow-500', key: 'showHeatmap' },
                             ].map((f) => (
                                 <label key={f.key} className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer hover:text-slate-300 transition-colors">
                                     <input
@@ -185,7 +223,7 @@ export function LiveMap() {
                 </Card>
             )}
 
-            <div className="relative h-full min-h-[500px] rounded-xl overflow-hidden border border-white/[0.06] shadow-xl">
+            <div className="relative h-full min-h-[300px] sm:min-h-[500px] rounded-xl overflow-hidden border border-white/[0.06] shadow-xl">
                 <MapContainer
                     center={[UJJAIN_CENTER.lat, UJJAIN_CENTER.lng]}
                     zoom={14}
@@ -199,32 +237,9 @@ export function LiveMap() {
 
                     <MapControls />
 
-                    {filters.showHeatmap && CROWD_DENSITY_ZONES.map((zone) => (
-                        <Circle
-                            key={zone.id}
-                            center={[zone.lat, zone.lng]}
-                            radius={zone.density * 3}
-                            pathOptions={{
-                                color: zone.risk === 'critical' ? '#ef4444' :
-                                    zone.risk === 'high' ? '#f97316' :
-                                        zone.risk === 'medium' ? '#eab308' : '#22c55e',
-                                fillColor: zone.risk === 'critical' ? '#ef4444' :
-                                    zone.risk === 'high' ? '#f97316' :
-                                        zone.risk === 'medium' ? '#eab308' : '#22c55e',
-                                fillOpacity: 0.15,
-                                weight: 1,
-                                opacity: 0.4,
-                            }}
-                        >
-                            <Popup>
-                                <div className="text-slate-200 p-1">
-                                    <p className="font-semibold text-sm">{zone.name}</p>
-                                    <p className="text-xs text-slate-400 mt-1">Density: <span className="font-mono">{zone.density}%</span></p>
-                                    <p className="text-xs text-slate-400 capitalize">Risk: {zone.risk}</p>
-                                </div>
-                            </Popup>
-                        </Circle>
-                    ))}
+                    {filters.showHeatmap && (
+                        <HeatmapLayer zones={CROWD_DENSITY_ZONES} />
+                    )}
 
                     {filters.showAlerts && (
                         <MarkerClusterGroup
@@ -243,7 +258,7 @@ export function LiveMap() {
                                         icon={createPulsingIcon(emergencyType?.color || '#ef4444')}
                                     >
                                         <Popup>
-                                            <div className="text-slate-200 min-w-[200px]">
+                                            <div className="text-slate-200 min-w-[180px] sm:min-w-[200px]">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span
                                                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -317,9 +332,9 @@ export function LiveMap() {
                     )}
                 </MapContainer>
 
-                <div className="absolute bottom-4 left-4 z-[1000] p-3 bg-[hsl(225,20%,10%)]/90 backdrop-blur-sm border border-white/[0.08] rounded-xl shadow-xl">
-                    <p className="text-[9px] font-semibold text-slate-600 mb-2.5 uppercase tracking-[0.15em]">Legend</p>
-                    <div className="space-y-2 text-[11px]">
+                <div className="absolute bottom-4 left-4 z-[1000] p-2.5 sm:p-3 bg-[hsl(225,20%,10%)]/90 backdrop-blur-sm border border-white/[0.08] rounded-xl shadow-xl">
+                    <p className="text-[9px] font-semibold text-slate-600 mb-2 sm:mb-2.5 uppercase tracking-[0.15em]">Legend</p>
+                    <div className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-[11px]">
                         <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.5)]" />
                             <span className="text-slate-400">Active Alert</span>
@@ -329,8 +344,8 @@ export function LiveMap() {
                             <span className="text-slate-400">Volunteer</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 bg-yellow-500/50 rounded-full" />
-                            <span className="text-slate-400">Crowd Zone</span>
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'linear-gradient(135deg, #22c55e, #ef4444)' }} />
+                            <span className="text-slate-400">Crowd Heatmap</span>
                         </div>
                     </div>
                 </div>

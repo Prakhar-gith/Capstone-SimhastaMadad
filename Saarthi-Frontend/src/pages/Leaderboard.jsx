@@ -53,26 +53,26 @@ export function Leaderboard() {
         : 0;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
             <div>
-                <h1 className="text-xl font-bold text-white tracking-tight">Volunteer Leaderboard</h1>
-                <p className="text-xs text-slate-500 mt-0.5">Recognizing outstanding emergency response volunteers</p>
+                <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Volunteer Leaderboard</h1>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">Recognizing outstanding emergency response volunteers</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {[
                     { label: 'Total Responses', value: totalResponses, icon: CheckCircle, gradient: 'from-emerald-500/10 to-emerald-600/5', ring: 'ring-emerald-500/15', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-400' },
                     { label: 'Top Score', value: rankedVolunteers[0]?.score || 0, icon: Trophy, gradient: 'from-amber-500/10 to-amber-600/5', ring: 'ring-amber-500/15', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-400' },
                     { label: 'Avg Score', value: avgScore, icon: TrendingUp, gradient: 'from-blue-500/10 to-blue-600/5', ring: 'ring-blue-500/15', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-400' },
                 ].map((stat, i) => (
-                    <div key={stat.label} className={`rounded-xl bg-gradient-to-br ${stat.gradient} ring-1 ${stat.ring} p-4 animate-fadeIn stagger-${i + 1}`}>
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 ${stat.iconBg} rounded-lg`}>
-                                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+                    <div key={stat.label} className={`rounded-xl bg-gradient-to-br ${stat.gradient} ring-1 ${stat.ring} p-2.5 sm:p-4 animate-fadeIn stagger-${i + 1}`}>
+                        <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+                            <div className={`p-1.5 sm:p-2 ${stat.iconBg} rounded-lg`}>
+                                <stat.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${stat.iconColor}`} />
                             </div>
                             <div>
-                                <p className="text-xl font-bold text-white tabular-nums"><AnimatedValue value={stat.value} /></p>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{stat.label}</p>
+                                <p className="text-lg sm:text-xl font-bold text-white tabular-nums"><AnimatedValue value={stat.value} /></p>
+                                <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{stat.label}</p>
                             </div>
                         </div>
                     </div>
@@ -88,12 +88,12 @@ export function Leaderboard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-end justify-center gap-4 pt-4 pb-2">
+                        <div className="flex items-end justify-center gap-2 sm:gap-4 pt-4 pb-2">
                             {podiumOrder.map((v, i) => {
                                 const tier = getBadgeTier(v.score);
                                 return (
                                     <div key={v.id} className="flex flex-col items-center">
-                                        <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-2 relative">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-2 relative">
                                             <span className="text-sm font-bold text-slate-300">{v.name.charAt(0)}</span>
                                             {i === 1 && (
                                                 <div className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
@@ -101,10 +101,10 @@ export function Leaderboard() {
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-xs font-medium text-slate-200 text-center truncate max-w-[80px] mb-1">{v.name.split(' ')[0]}</p>
-                                        <span className="text-lg font-bold tabular-nums text-white mb-2"><AnimatedValue value={v.score} /></span>
+                                        <p className="text-[10px] sm:text-xs font-medium text-slate-200 text-center truncate max-w-[60px] sm:max-w-[80px] mb-1">{v.name.split(' ')[0]}</p>
+                                        <span className="text-base sm:text-lg font-bold tabular-nums text-white mb-2"><AnimatedValue value={v.score} /></span>
                                         <div className={cn(
-                                            'w-20 rounded-t-xl bg-gradient-to-b ring-1 flex items-end justify-center pb-2',
+                                            'w-16 sm:w-20 rounded-t-xl bg-gradient-to-b ring-1 flex items-end justify-center pb-2',
                                             podiumColors[i],
                                             podiumHeights[i]
                                         )}>

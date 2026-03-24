@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield, Search } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield, Search, Volume2, VolumeX } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAlertsStore } from '../store/alertsStore';
+import { useAudioStore } from '../hooks/useAudioAlert';
 import { Button } from './ui/Button';
 import { formatTime } from '../lib/utils';
 
 export function Header({ onMenuClick, onSearchClick }) {
     const { user, logout } = useAuthStore();
     const { lastSync, networkStatus, meshHealth, forceRefresh } = useAlertsStore();
+    const { isMuted, toggleMute } = useAudioStore();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -95,7 +97,17 @@ export function Header({ onMenuClick, onSearchClick }) {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 w-8 p-0 ${isMuted ? 'text-red-400 hover:text-red-300' : 'text-slate-500 hover:text-slate-300'}`}
+                    onClick={toggleMute}
+                    title={isMuted ? 'Unmute alerts' : 'Mute alerts'}
+                >
+                    {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                </Button>
+
                 <span className="hidden lg:block text-[10px] text-slate-600 font-mono whitespace-nowrap">
                     SYNC {formatTime(lastSync)}
                 </span>

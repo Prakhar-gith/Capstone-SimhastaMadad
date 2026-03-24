@@ -9,7 +9,10 @@ import {
     Phone,
     CheckCircle,
     AlertTriangle,
-    Send
+    Send,
+    Download,
+    FileText,
+    FileSpreadsheet
 } from 'lucide-react';
 import { useAlertsStore } from '../store/alertsStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -20,6 +23,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonTableRow } from '../components/ui/Skeleton';
 import { formatRelativeTime, formatDateTime, maskDeviceId } from '../lib/utils';
 import { EMERGENCY_TYPES, PRIORITY_OPTIONS, STATUS_OPTIONS } from '../lib/mockData';
+import { exportToCSV, exportAlertsToPDF, ALERT_CSV_COLUMNS } from '../lib/exportUtils';
 
 export function IncidentLogs() {
     const { alerts, filters, setFilter, getFilteredAlerts, updateAlertStatus, isLoading } = useAlertsStore();
@@ -33,21 +37,43 @@ export function IncidentLogs() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                    <h1 className="text-xl font-bold text-white tracking-tight">Incident Logs</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">All emergency alerts and their status</p>
+                    <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Incident Logs</h1>
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">All emergency alerts and their status</p>
                 </div>
-                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider">
-                    {filteredAlerts.length} of {alerts.length} alerts
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => exportToCSV(filteredAlerts, 'incident_logs', ALERT_CSV_COLUMNS)}
+                        disabled={filteredAlerts.length === 0}
+                        title="Export CSV"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">CSV</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => exportAlertsToPDF(filteredAlerts, 'Saarthi Incident Report')}
+                        disabled={filteredAlerts.length === 0}
+                        title="Export PDF"
+                    >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">PDF</span>
+                    </Button>
+                    <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider hidden sm:block">
+                        {filteredAlerts.length} of {alerts.length}
+                    </div>
                 </div>
             </div>
 
             <Card className="overflow-hidden">
-                <CardContent className="py-3 px-4">
+                <CardContent className="py-2.5 sm:py-3 px-3 sm:px-4">
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] text-slate-600 uppercase tracking-wider font-medium">Filters</span>
+                        <span className="text-[10px] text-slate-600 uppercase tracking-wider font-medium hidden sm:inline">Filters</span>
 
                         {[
                             { value: filters.emergencyType, onChange: (v) => setFilter('emergencyType', v), options: [{ value: 'all', label: 'All Types' }, ...EMERGENCY_TYPES.map(t => ({ value: t.id, label: t.label }))] },
@@ -58,7 +84,7 @@ export function IncidentLogs() {
                                 key={i}
                                 value={filter.value}
                                 onChange={(e) => filter.onChange(e.target.value)}
-                                className="px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg text-[11px] text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/40 focus:border-blue-500/40 cursor-pointer"
+                                className="px-2 sm:px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg text-[11px] text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/40 focus:border-blue-500/40 cursor-pointer flex-1 sm:flex-none min-w-0"
                             >
                                 {filter.options.map(opt => (
                                     <option key={opt.value} value={opt.value} className="bg-[hsl(225,20%,12%)]">{opt.label}</option>
@@ -69,7 +95,8 @@ export function IncidentLogs() {
                 </CardContent>
             </Card>
 
-            <Card className="overflow-hidden">
+            {/* Desktop table */}
+            <Card className="overflow-hidden hidden md:block">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
@@ -197,6 +224,70 @@ export function IncidentLogs() {
                 </div>
             </Card>
 
+            {/* Mobile card layout */}
+            <div className="md:hidden space-y-2">
+                {isLoading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} className="p-3">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded bg-white/[0.04] animate-[shimmer_2s_infinite]" />
+                                    <div className="h-3 w-24 bg-white/[0.04] rounded animate-[shimmer_2s_infinite]" />
+                                </div>
+                                <div className="h-2.5 w-32 bg-white/[0.04] rounded animate-[shimmer_2s_infinite]" />
+                            </div>
+                        </Card>
+                    ))
+                ) : filteredAlerts.length === 0 ? (
+                    <EmptyState
+                        iconType="search"
+                        title="No matching incidents"
+                        description="Try adjusting your filters."
+                        actionLabel="Clear Filters"
+                        onAction={() => {
+                            setFilter('emergencyType', 'all');
+                            setFilter('status', 'all');
+                            setFilter('priority', 'all');
+                        }}
+                    />
+                ) : (
+                    filteredAlerts.map((alert) => {
+                        const emergencyType = EMERGENCY_TYPES.find(t => t.id === alert.emergency_type);
+                        return (
+                            <Card
+                                key={alert.id}
+                                className="p-3 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                                onClick={() => setSelectedAlert(alert)}
+                            >
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        <span
+                                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            style={{ backgroundColor: emergencyType?.color }}
+                                        />
+                                        <span className="text-xs font-medium text-slate-200 truncate">{emergencyType?.label}</span>
+                                    </div>
+                                    <Badge variant={alert.priority}>{alert.priority}</Badge>
+                                </div>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 min-w-0">
+                                        <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                                        <span className="truncate">{alert.location_name}</span>
+                                    </div>
+                                    <Badge variant={alert.status} className="text-[9px]">{alert.status.replace('_', ' ')}</Badge>
+                                </div>
+                                <div className="flex items-center gap-1 mt-1.5 text-[9px] text-slate-600 font-mono">
+                                    <Clock className="w-2.5 h-2.5" />
+                                    {formatRelativeTime(alert.timestamp)}
+                                    <span className="mx-1 text-slate-700">•</span>
+                                    <span>{alert.alert_id}</span>
+                                </div>
+                            </Card>
+                        );
+                    })
+                )}
+            </div>
+
             <Modal
                 isOpen={!!selectedAlert}
                 onClose={() => setSelectedAlert(null)}
@@ -233,18 +324,18 @@ export function IncidentLogs() {
                                 { icon: Radio, label: 'Hop Count', value: `${selectedAlert.hop_count} devices`, mono: true },
                                 { icon: Phone, label: 'Device ID', value: maskDeviceId(selectedAlert.sender), mono: true },
                             ].map((item, i) => (
-                                <div key={i} className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.04]">
+                                <div key={i} className="p-2.5 sm:p-3 bg-white/[0.03] rounded-lg border border-white/[0.04]">
                                     <div className="flex items-center gap-1.5 text-slate-500 mb-1">
                                         <item.icon className="w-3 h-3" />
                                         <span className="text-[10px] uppercase tracking-wider">{item.label}</span>
                                     </div>
-                                    <p className={`text-xs text-slate-200 ${item.mono ? 'font-mono' : ''}`}>{item.value}</p>
+                                    <p className={`text-[11px] sm:text-xs text-slate-200 ${item.mono ? 'font-mono' : ''} break-all`}>{item.value}</p>
                                 </div>
                             ))}
                         </div>
 
                         {selectedAlert.user_info && (
-                            <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.04]">
+                            <div className="p-2.5 sm:p-3 bg-white/[0.03] rounded-lg border border-white/[0.04]">
                                 <h4 className="flex items-center gap-1.5 text-slate-500 mb-2.5">
                                     <User className="w-3 h-3" />
                                     <span className="text-[10px] uppercase tracking-wider">Person Details</span>
@@ -272,7 +363,7 @@ export function IncidentLogs() {
                                 disabled={selectedAlert.status !== 'unassigned'}
                             >
                                 <Send className="w-3.5 h-3.5" />
-                                Assign Responder
+                                Assign
                             </Button>
                             <Button
                                 variant="warning"
@@ -292,7 +383,7 @@ export function IncidentLogs() {
                                 }}
                             >
                                 <CheckCircle className="w-3.5 h-3.5" />
-                                Mark Resolved
+                                Resolve
                             </Button>
                         </div>
                     </div>
