@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "buildCommand": "cd Saarthi-Frontend && npm install && npm run build",
+  "outputDirectory": "Saarthi-Frontend/dist",
+  "framework": "vite"
+}
