@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield, Search } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAlertsStore } from '../store/alertsStore';
 import { Button } from './ui/Button';
 import { formatTime } from '../lib/utils';
 
-export function Header({ onMenuClick }) {
+export function Header({ onMenuClick, onSearchClick }) {
     const { user, logout } = useAuthStore();
     const { lastSync, networkStatus, meshHealth, forceRefresh } = useAlertsStore();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -43,7 +43,16 @@ export function Header({ onMenuClick }) {
                 </div>
             </div>
 
-            <div className="hidden md:flex items-center gap-5 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+                <button
+                    onClick={onSearchClick}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors group"
+                >
+                    <Search className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400" />
+                    <span className="text-xs text-slate-600 group-hover:text-slate-400">Search...</span>
+                    <kbd className="text-[9px] font-mono text-slate-700 px-1 py-0.5 bg-white/[0.03] border border-white/[0.06] rounded">⌘K</kbd>
+                </button>
+
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
                     <Clock className="w-3.5 h-3.5 text-slate-500" />
                     <span className="font-mono text-xs text-slate-300 tabular-nums">
@@ -58,18 +67,18 @@ export function Header({ onMenuClick }) {
                                 <Wifi className="w-3.5 h-3.5 text-emerald-400" />
                                 <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-statusPulse" />
                             </div>
-                            <span className="text-[11px] font-medium text-emerald-400">MESH ONLINE</span>
+                            <span className="text-[11px] font-medium text-emerald-400">MESH</span>
                         </>
                     ) : (
                         <>
                             <WifiOff className="w-3.5 h-3.5 text-red-400" />
-                            <span className="text-[11px] font-medium text-red-400">MESH OFFLINE</span>
+                            <span className="text-[11px] font-medium text-red-400">OFFLINE</span>
                         </>
                     )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-14 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
                             className="h-full rounded-full transition-all duration-700 ease-out"
                             style={{

@@ -98,6 +98,11 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes shimmerSkeleton {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 @keyframes statusPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

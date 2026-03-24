@@ -7,15 +7,17 @@ import { useToastStore } from '../store/toastStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonAlertRow, SkeletonDensityBar } from '../components/ui/Skeleton';
 import { formatRelativeTime } from '../lib/utils';
 import { EMERGENCY_TYPES, CROWD_DENSITY_ZONES } from '../lib/mockData';
 
 export function Dashboard() {
-    const { alerts, simulateNewAlert, isSimulating } = useAlertsStore();
+    const { alerts, simulateNewAlert, isSimulating, isLoading } = useAlertsStore();
     const { addToast } = useToastStore();
 
     useEffect(() => {
-        if (!isSimulating) return;
+        if (!isSimulating || isLoading) return;
 
         const interval = setInterval(() => {
             const newAlert = simulateNewAlert();
@@ -31,10 +33,9 @@ export function Dashboard() {
         }, 10000);
 
         return () => clearInterval(interval);
-    }, [isSimulating, simulateNewAlert, addToast]);
+    }, [isSimulating, isLoading, simulateNewAlert, addToast]);
 
     const recentAlerts = alerts.slice(0, 5);
-    const activeAlerts = alerts.filter(a => a.status !== 'resolved');
 
     return (
         <div className="space-y-5">
@@ -56,13 +57,22 @@ export function Dashboard() {
                         </Link>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="divide-y divide-white/[0.04]">
-                            {recentAlerts.length === 0 ? (
-                                <div className="p-8 text-center text-slate-600 text-sm">
-                                    No alerts yet. System is monitoring...
-                                </div>
-                            ) : (
-                                recentAlerts.map((alert, index) => {
+                        {isLoading ? (
+                            <div className="divide-y divide-white/[0.04]">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <SkeletonAlertRow key={i} />
+                                ))}
+                            </div>
+                        ) : recentAlerts.length === 0 ? (
+                            <EmptyState
+                                iconType="alerts"
+                                title="No alerts yet"
+                                description="The system is monitoring for emergencies. Alerts will appear here when detected."
+                                className="py-12"
+                            />
+                        ) : (
+                            <div className="divide-y divide-white/[0.04]">
+                                {recentAlerts.map((alert, index) => {
                                     const emergencyType = EMERGENCY_TYPES.find(t => t.id === alert.emergency_type);
                                     return (
                                         <div
@@ -103,9 +113,9 @@ export function Dashboard() {
                                             </div>
                                         </div>
                                     );
-                                })
-                            )}
-                        </div>
+                                })}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -119,31 +129,37 @@ export function Dashboard() {
                         </Link>
                     </CardHeader>
                     <CardContent className="space-y-3 p-4 pt-2">
-                        {CROWD_DENSITY_ZONES.map((zone) => (
-                            <div key={zone.id} className="space-y-1.5">
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <span className="text-slate-400 truncate mr-2">{zone.name}</span>
-                                    <span className={`font-mono font-medium flex-shrink-0 tabular-nums ${zone.risk === 'critical' ? 'text-red-400' :
-                                            zone.risk === 'high' ? 'text-orange-400' :
-                                                zone.risk === 'medium' ? 'text-yellow-400' : 'text-emerald-400'
-                                        }`}>
-                                        {zone.density}%
-                                    </span>
+                        {isLoading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <SkeletonDensityBar key={i} />
+                            ))
+                        ) : (
+                            CROWD_DENSITY_ZONES.map((zone) => (
+                                <div key={zone.id} className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[11px]">
+                                        <span className="text-slate-400 truncate mr-2">{zone.name}</span>
+                                        <span className={`font-mono font-medium flex-shrink-0 tabular-nums ${zone.risk === 'critical' ? 'text-red-400' :
+                                                zone.risk === 'high' ? 'text-orange-400' :
+                                                    zone.risk === 'medium' ? 'text-yellow-400' : 'text-emerald-400'
+                                            }`}>
+                                            {zone.density}%
+                                        </span>
+                                    </div>
+                                    <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-700 ease-out"
+                                            style={{
+                                                width: `${zone.density}%`,
+                                                background: zone.risk === 'critical' ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                                                    zone.risk === 'high' ? 'linear-gradient(90deg, #f97316, #fb923c)' :
+                                                        zone.risk === 'medium' ? 'linear-gradient(90deg, #eab308, #facc15)' :
+                                                            'linear-gradient(90deg, #10b981, #34d399)'
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all duration-700 ease-out"
-                                        style={{
-                                            width: `${zone.density}%`,
-                                            background: zone.risk === 'critical' ? 'linear-gradient(90deg, #ef4444, #f87171)' :
-                                                zone.risk === 'high' ? 'linear-gradient(90deg, #f97316, #fb923c)' :
-                                                    zone.risk === 'medium' ? 'linear-gradient(90deg, #eab308, #facc15)' :
-                                                        'linear-gradient(90deg, #10b981, #34d399)'
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -157,7 +173,7 @@ export function Dashboard() {
                         </div>
                         <span className="text-slate-700 hidden sm:inline">|</span>
                         <span className="text-slate-600 hidden sm:inline font-mono">
-                            {activeAlerts.length} alerts monitored
+                            {alerts.filter(a => a.status !== 'resolved').length} alerts monitored
                         </span>
                     </div>
                     <span className="text-slate-700 font-mono uppercase tracking-wider text-[10px]">

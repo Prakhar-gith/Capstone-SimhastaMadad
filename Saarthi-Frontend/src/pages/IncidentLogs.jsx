@@ -16,11 +16,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonTableRow } from '../components/ui/Skeleton';
 import { formatRelativeTime, formatDateTime, maskDeviceId } from '../lib/utils';
 import { EMERGENCY_TYPES, PRIORITY_OPTIONS, STATUS_OPTIONS } from '../lib/mockData';
 
 export function IncidentLogs() {
-    const { alerts, filters, setFilter, getFilteredAlerts, updateAlertStatus } = useAlertsStore();
+    const { alerts, filters, setFilter, getFilteredAlerts, updateAlertStatus, isLoading } = useAlertsStore();
     const [expandedId, setExpandedId] = useState(null);
     const [selectedAlert, setSelectedAlert] = useState(null);
 
@@ -80,10 +82,24 @@ export function IncidentLogs() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.03]">
-                            {filteredAlerts.length === 0 ? (
+                            {isLoading ? (
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <SkeletonTableRow key={i} />
+                                ))
+                            ) : filteredAlerts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="px-4 py-12 text-center text-slate-600 text-sm">
-                                        No alerts match the current filters
+                                    <td colSpan={8}>
+                                        <EmptyState
+                                            iconType="search"
+                                            title="No matching incidents"
+                                            description="Try adjusting your filters to see more results."
+                                            actionLabel="Clear Filters"
+                                            onAction={() => {
+                                                setFilter('emergencyType', 'all');
+                                                setFilter('status', 'all');
+                                                setFilter('priority', 'all');
+                                            }}
+                                        />
                                     </td>
                                 </tr>
                             ) : (
@@ -158,21 +174,15 @@ export function IncidentLogs() {
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px]">
                                                             <div>
                                                                 <h4 className="font-medium text-slate-600 uppercase tracking-wider text-[10px] mb-1">Coordinates</h4>
-                                                                <p className="text-slate-300 font-mono">
-                                                                    {alert.latitude}, {alert.longitude}
-                                                                </p>
+                                                                <p className="text-slate-300 font-mono">{alert.latitude}, {alert.longitude}</p>
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-medium text-slate-600 uppercase tracking-wider text-[10px] mb-1">Device ID</h4>
-                                                                <p className="text-slate-300 font-mono">
-                                                                    {maskDeviceId(alert.sender)}
-                                                                </p>
+                                                                <p className="text-slate-300 font-mono">{maskDeviceId(alert.sender)}</p>
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-medium text-slate-600 uppercase tracking-wider text-[10px] mb-1">Received At</h4>
-                                                                <p className="text-slate-300 font-mono">
-                                                                    {formatDateTime(alert.received_at)}
-                                                                </p>
+                                                                <p className="text-slate-300 font-mono">{formatDateTime(alert.received_at)}</p>
                                                             </div>
                                                         </div>
                                                     </td>

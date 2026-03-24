@@ -7,15 +7,31 @@ import {
     TrendingDown
 } from 'lucide-react';
 import { useAlertsStore } from '../store/alertsStore';
+import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
+import { SkeletonStatsCard } from './ui/Skeleton';
+
+function AnimatedStat({ value, suffix = '' }) {
+    const num = typeof value === 'number' ? value : parseInt(value) || 0;
+    const animated = useAnimatedCounter(num);
+    return <>{animated}{suffix}</>;
+}
 
 export function StatsCards() {
-    const { alerts, volunteers, meshHealth } = useAlertsStore();
+    const { alerts, volunteers, meshHealth, isLoading } = useAlertsStore();
+
+    if (isLoading) {
+        return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonStatsCard key={i} />
+                ))}
+            </div>
+        );
+    }
 
     const activeAlerts = alerts.filter(a => a.status !== 'resolved').length;
     const criticalAlerts = alerts.filter(a => a.priority === 'critical' && a.status !== 'resolved').length;
     const onlineVolunteers = volunteers.filter(v => v.status !== 'offline').length;
-
-    const avgResponseTime = '2m 14s';
 
     const stats = [
         {
@@ -42,7 +58,7 @@ export function StatsCards() {
         },
         {
             title: 'Avg Response',
-            value: avgResponseTime,
+            value: '2m 14s',
             subValue: 'Last 24 hours',
             icon: Clock,
             gradient: 'from-amber-500/15 to-amber-600/5',
@@ -50,10 +66,12 @@ export function StatsCards() {
             iconBg: 'bg-amber-500/15',
             iconColor: 'text-amber-400',
             trend: 'down',
+            isText: true,
         },
         {
             title: 'Mesh Health',
-            value: `${meshHealth}%`,
+            value: meshHealth,
+            suffix: '%',
             subValue: 'Connectivity',
             icon: Activity,
             gradient: 'from-emerald-500/15 to-emerald-600/5',
@@ -74,7 +92,9 @@ export function StatsCards() {
                     <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                             <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium mb-1">{stat.title}</p>
-                            <p className="text-2xl font-bold text-white tabular-nums tracking-tight">{stat.value}</p>
+                            <p className="text-2xl font-bold text-white tabular-nums tracking-tight">
+                                {stat.isText ? stat.value : <AnimatedStat value={stat.value} suffix={stat.suffix || ''} />}
+                            </p>
                             <p className="text-[11px] text-slate-500 mt-1">{stat.subValue}</p>
                         </div>
                         <div className="flex flex-col items-end gap-2 flex-shrink-0">

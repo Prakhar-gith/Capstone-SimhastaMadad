@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Icon, divIcon } from 'leaflet';
 import { Filter, Layers, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import { useAlertsStore } from '../store/alertsStore';
@@ -73,6 +74,32 @@ function createVolunteerIcon() {
     });
 }
 
+function createClusterIcon(cluster) {
+    const count = cluster.getChildCount();
+    const size = count < 10 ? 36 : count < 30 ? 44 : 52;
+    const bg = count < 10 ? '#3b82f6' : count < 30 ? '#f59e0b' : '#ef4444';
+    return divIcon({
+        html: `<div style="
+            width: ${size}px;
+            height: ${size}px;
+            background: ${bg}dd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: ${size > 44 ? 14 : 12}px;
+            font-family: 'Inter', sans-serif;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 12px ${bg}40;
+        ">${count}</div>`,
+        className: 'custom-cluster-icon',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    });
+}
+
 function MapControls() {
     const map = useMap();
 
@@ -103,7 +130,6 @@ export function LiveMap() {
         showAlerts: true,
         showVolunteers: true,
         showHeatmap: true,
-        alertTypes: 'all',
     });
 
     const activeAlerts = alerts.filter(a => a.status !== 'resolved');
@@ -200,55 +226,95 @@ export function LiveMap() {
                         </Circle>
                     ))}
 
-                    {filters.showAlerts && activeAlerts.map((alert) => {
-                        const emergencyType = EMERGENCY_TYPES.find(t => t.id === alert.emergency_type);
-                        return (
-                            <Marker
-                                key={alert.id}
-                                position={[parseFloat(alert.latitude), parseFloat(alert.longitude)]}
-                                icon={createPulsingIcon(emergencyType?.color || '#ef4444')}
-                            >
-                                <Popup>
-                                    <div className="text-slate-200 min-w-[200px]">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span
-                                                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                                style={{ backgroundColor: emergencyType?.color }}
-                                            />
-                                            <span className="font-semibold text-sm">{emergencyType?.label}</span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mb-2">{alert.location_name}</p>
-                                        <div className="flex gap-2 mb-2">
-                                            <Badge variant={alert.priority}>{alert.priority}</Badge>
-                                            <Badge variant={alert.status}>{alert.status.replace('_', ' ')}</Badge>
-                                        </div>
-                                        <p className="text-[10px] text-slate-500 font-mono">{formatRelativeTime(alert.timestamp)}</p>
-                                        <button className="mt-2 w-full px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-colors">
-                                            Dispatch Team
-                                        </button>
-                                    </div>
-                                </Popup>
-                            </Marker>
-                        );
-                    })}
-
-                    {filters.showVolunteers && onlineVolunteers.map((volunteer) => (
-                        <Marker
-                            key={volunteer.id}
-                            position={[volunteer.lat, volunteer.lng]}
-                            icon={createVolunteerIcon()}
+                    {filters.showAlerts && (
+                        <MarkerClusterGroup
+                            chunkedLoading
+                            iconCreateFunction={createClusterIcon}
+                            maxClusterRadius={60}
+                            spiderfyOnMaxZoom={true}
+                            showCoverageOnHover={false}
                         >
-                            <Popup>
-                                <div className="text-slate-200">
-                                    <p className="font-semibold text-sm">{volunteer.name}</p>
-                                    <p className="text-xs text-slate-400">{volunteer.location}</p>
-                                    <p className="text-[10px] text-slate-500 mt-1 capitalize">
-                                        Status: {volunteer.status}
-                                    </p>
-                                </div>
-                            </Popup>
-                        </Marker>
-                    ))}
+                            {activeAlerts.map((alert) => {
+                                const emergencyType = EMERGENCY_TYPES.find(t => t.id === alert.emergency_type);
+                                return (
+                                    <Marker
+                                        key={alert.id}
+                                        position={[parseFloat(alert.latitude), parseFloat(alert.longitude)]}
+                                        icon={createPulsingIcon(emergencyType?.color || '#ef4444')}
+                                    >
+                                        <Popup>
+                                            <div className="text-slate-200 min-w-[200px]">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span
+                                                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                                        style={{ backgroundColor: emergencyType?.color }}
+                                                    />
+                                                    <span className="font-semibold text-sm">{emergencyType?.label}</span>
+                                                </div>
+                                                <p className="text-xs text-slate-400 mb-2">{alert.location_name}</p>
+                                                <div className="flex gap-2 mb-2">
+                                                    <Badge variant={alert.priority}>{alert.priority}</Badge>
+                                                    <Badge variant={alert.status}>{alert.status.replace('_', ' ')}</Badge>
+                                                </div>
+                                                <p className="text-[10px] text-slate-500 font-mono">{formatRelativeTime(alert.timestamp)}</p>
+                                                <button className="mt-2 w-full px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-colors">
+                                                    Dispatch Team
+                                                </button>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                );
+                            })}
+                        </MarkerClusterGroup>
+                    )}
+
+                    {filters.showVolunteers && (
+                        <MarkerClusterGroup
+                            chunkedLoading
+                            iconCreateFunction={(cluster) => {
+                                const count = cluster.getChildCount();
+                                return divIcon({
+                                    html: `<div style="
+                                        width: 32px;
+                                        height: 32px;
+                                        background: #3b82f6dd;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: 700;
+                                        font-size: 11px;
+                                        font-family: 'Inter', sans-serif;
+                                        border: 2px solid rgba(255,255,255,0.3);
+                                        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+                                    ">${count}</div>`,
+                                    className: 'custom-cluster-icon',
+                                    iconSize: [32, 32],
+                                    iconAnchor: [16, 16],
+                                });
+                            }}
+                            maxClusterRadius={50}
+                        >
+                            {onlineVolunteers.map((volunteer) => (
+                                <Marker
+                                    key={volunteer.id}
+                                    position={[volunteer.lat, volunteer.lng]}
+                                    icon={createVolunteerIcon()}
+                                >
+                                    <Popup>
+                                        <div className="text-slate-200">
+                                            <p className="font-semibold text-sm">{volunteer.name}</p>
+                                            <p className="text-xs text-slate-400">{volunteer.location}</p>
+                                            <p className="text-[10px] text-slate-500 mt-1 capitalize">
+                                                Status: {volunteer.status}
+                                            </p>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MarkerClusterGroup>
+                    )}
                 </MapContainer>
 
                 <div className="absolute bottom-4 left-4 z-[1000] p-3 bg-[hsl(225,20%,10%)]/90 backdrop-blur-sm border border-white/[0.08] rounded-xl shadow-xl">

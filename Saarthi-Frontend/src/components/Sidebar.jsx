@@ -5,6 +5,7 @@ import {
     ClipboardList,
     Users,
     BarChart3,
+    Trophy,
     X,
     AlertCircle
 } from 'lucide-react';
@@ -12,11 +13,12 @@ import { useAlertsStore } from '../store/alertsStore';
 import { cn } from '../lib/utils';
 
 const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Overview' },
-    { path: '/map', icon: Map, label: 'Live Map' },
-    { path: '/incidents', icon: ClipboardList, label: 'Incidents' },
-    { path: '/volunteers', icon: Users, label: 'Volunteers' },
-    { path: '/analytics', icon: BarChart3, label: 'Analytics' },
+    { path: '/', icon: LayoutDashboard, label: 'Overview', shortcut: '1' },
+    { path: '/map', icon: Map, label: 'Live Map', shortcut: '2' },
+    { path: '/incidents', icon: ClipboardList, label: 'Incidents', shortcut: '3' },
+    { path: '/volunteers', icon: Users, label: 'Volunteers', shortcut: '4' },
+    { path: '/analytics', icon: BarChart3, label: 'Analytics', shortcut: '5' },
+    { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', shortcut: '6' },
 ];
 
 export function Sidebar({ isOpen, onClose }) {
@@ -74,7 +76,7 @@ export function Sidebar({ isOpen, onClose }) {
                                     onClick={onClose}
                                     className={({ isActive }) =>
                                         cn(
-                                            'relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200',
+                                            'relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 group',
                                             isActive
                                                 ? 'bg-blue-500/[0.1] text-blue-400'
                                                 : 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-300'
@@ -87,7 +89,10 @@ export function Sidebar({ isOpen, onClose }) {
                                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-blue-500 rounded-r-full" />
                                             )}
                                             <item.icon className="w-4 h-4 flex-shrink-0" />
-                                            <span className="truncate">{item.label}</span>
+                                            <span className="truncate flex-1">{item.label}</span>
+                                            <kbd className="hidden lg:inline text-[9px] font-mono text-slate-700 group-hover:text-slate-500 transition-colors">
+                                                {item.shortcut}
+                                            </kbd>
                                         </>
                                     )}
                                 </NavLink>
@@ -100,6 +105,9 @@ export function Sidebar({ isOpen, onClose }) {
                     <div className="text-[10px] text-slate-600">
                         <p className="font-semibold text-slate-500 uppercase tracking-wider">Simhastha 2028</p>
                         <p className="truncate mt-0.5">Ujjain, MP • v1.0.0</p>
+                        <p className="mt-1.5 text-slate-700">
+                            <kbd className="px-1 py-0.5 bg-white/[0.03] border border-white/[0.06] rounded font-mono">Ctrl+K</kbd> Search
+                        </p>
                     </div>
                 </div>
             </aside>

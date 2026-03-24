@@ -7,8 +7,8 @@ import { LiveMap } from './pages/LiveMap';
 import { IncidentLogs } from './pages/IncidentLogs';
 import { VolunteerStatus } from './pages/VolunteerStatus';
 import { Analytics } from './pages/Analytics';
+import { Leaderboard } from './pages/Leaderboard';
 
-// Protected Route wrapper
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
@@ -23,10 +23,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Dashboard Routes */}
         <Route
           path="/"
           element={
@@ -40,9 +38,9 @@ function App() {
           <Route path="incidents" element={<IncidentLogs />} />
           <Route path="volunteers" element={<VolunteerStatus />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
         </Route>
 
-        {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
