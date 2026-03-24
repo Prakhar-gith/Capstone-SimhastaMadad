@@ -7,113 +7,82 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { useAlertsStore } from '../store/alertsStore';
 import { ANALYTICS_DATA, EMERGENCY_TYPES, CROWD_DENSITY_ZONES } from '../lib/mockData';
 
+const chartTooltipStyle = {
+    backgroundColor: 'hsl(225, 20%, 10%)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '10px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+};
+
+const chartItemStyle = { color: '#e2e8f0', fontSize: '12px' };
+
 export function Analytics() {
     const { alerts } = useAlertsStore();
 
-    // Calculate stats
     const totalAlerts = alerts.length;
     const resolvedAlerts = alerts.filter(a => a.status === 'resolved').length;
     const resolutionRate = totalAlerts ? Math.round((resolvedAlerts / totalAlerts) * 100) : 0;
 
+    const quickStats = [
+        { title: 'Total Alerts', value: totalAlerts, icon: AlertTriangle, gradient: 'from-blue-500/10 to-blue-600/5', ring: 'ring-blue-500/15', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-400' },
+        { title: 'Resolution', value: `${resolutionRate}%`, icon: TrendingUp, gradient: 'from-emerald-500/10 to-emerald-600/5', ring: 'ring-emerald-500/15', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-400' },
+        { title: 'Avg Response', value: '2m 14s', icon: Clock, gradient: 'from-amber-500/10 to-amber-600/5', ring: 'ring-amber-500/15', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-400' },
+        { title: 'Volunteers', value: '340', icon: Users, gradient: 'from-purple-500/10 to-purple-600/5', ring: 'ring-purple-500/15', iconBg: 'bg-purple-500/15', iconColor: 'text-purple-400' },
+    ];
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
+        <div className="space-y-5">
             <div>
-                <h1 className="text-2xl font-bold text-white">Analytics & Insights</h1>
-                <p className="text-slate-400 mt-1">Data-driven overview of emergency response</p>
+                <h1 className="text-xl font-bold text-white tracking-tight">Analytics & Insights</h1>
+                <p className="text-xs text-slate-500 mt-0.5">Data-driven overview of emergency response</p>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
-                    <CardContent className="p-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {quickStats.map((stat, index) => (
+                    <div key={stat.title} className={`rounded-xl bg-gradient-to-br ${stat.gradient} ring-1 ${stat.ring} p-4 animate-fadeIn stagger-${index + 1}`}>
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-blue-500/20 rounded-xl">
-                                <AlertTriangle className="w-5 h-5 text-blue-400" />
+                            <div className={`p-2.5 ${stat.iconBg} rounded-xl`}>
+                                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white">{totalAlerts}</p>
-                                <p className="text-xs text-slate-400">Total Alerts</p>
+                                <p className="text-2xl font-bold text-white tabular-nums tracking-tight">{stat.value}</p>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{stat.title}</p>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-emerald-500/20 rounded-xl">
-                                <TrendingUp className="w-5 h-5 text-emerald-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white">{resolutionRate}%</p>
-                                <p className="text-xs text-slate-400">Resolution Rate</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-amber-500/20 rounded-xl">
-                                <Clock className="w-5 h-5 text-amber-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white">2m 14s</p>
-                                <p className="text-xs text-slate-400">Avg Response</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-purple-500/20 rounded-xl">
-                                <Users className="w-5 h-5 text-purple-400" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white">340</p>
-                                <p className="text-xs text-slate-400">Active Volunteers</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                ))}
             </div>
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Alerts by Type */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>Alerts by Type</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px]">
+                        <div className="h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={ANALYTICS_DATA.alertsByType}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={100}
-                                        paddingAngle={2}
+                                        innerRadius={55}
+                                        outerRadius={90}
+                                        paddingAngle={3}
                                         dataKey="value"
+                                        strokeWidth={0}
                                     >
                                         {ANALYTICS_DATA.alertsByType.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                            <Cell key={`cell-${index}`} fill={entry.color} opacity={0.85} />
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                        }}
-                                        itemStyle={{ color: '#e2e8f0' }}
+                                        contentStyle={chartTooltipStyle}
+                                        itemStyle={chartItemStyle}
                                     />
                                     <Legend
-                                        wrapperStyle={{ paddingTop: '20px' }}
-                                        formatter={(value) => <span style={{ color: '#94a3b8' }}>{value}</span>}
+                                        wrapperStyle={{ paddingTop: '16px' }}
+                                        formatter={(value) => <span style={{ color: '#64748b', fontSize: '11px' }}>{value}</span>}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -121,39 +90,38 @@ export function Analytics() {
                     </CardContent>
                 </Card>
 
-                {/* Alerts Trend */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Alerts Trend (24h)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px]">
+                        <div className="h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={ANALYTICS_DATA.alertsTrend}>
                                     <defs>
                                         <linearGradient id="alertsGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
                                             <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis
                                         dataKey="hour"
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                        stroke="#334155"
+                                        tick={{ fill: '#475569', fontSize: 10 }}
                                         interval={3}
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <YAxis
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                        stroke="#334155"
+                                        tick={{ fill: '#475569', fontSize: 10 }}
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                        }}
-                                        itemStyle={{ color: '#e2e8f0' }}
+                                        contentStyle={chartTooltipStyle}
+                                        itemStyle={chartItemStyle}
                                     />
                                     <Area
                                         type="monotone"
@@ -168,42 +136,41 @@ export function Analytics() {
                     </CardContent>
                 </Card>
 
-                {/* Response Time Trend */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Response Time Trend (7d)</CardTitle>
+                        <CardTitle>Response Time (7d)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px]">
+                        <div className="h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={ANALYTICS_DATA.responseTimesTrend}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis
                                         dataKey="date"
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                        stroke="#334155"
+                                        tick={{ fill: '#475569', fontSize: 10 }}
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <YAxis
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                        stroke="#334155"
+                                        tick={{ fill: '#475569', fontSize: 10 }}
                                         unit="m"
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                        }}
-                                        itemStyle={{ color: '#e2e8f0' }}
-                                        formatter={(value) => [`${value} min`, 'Avg Response Time']}
+                                        contentStyle={chartTooltipStyle}
+                                        itemStyle={chartItemStyle}
+                                        formatter={(value) => [`${value} min`, 'Avg Response']}
                                     />
                                     <Line
                                         type="monotone"
                                         dataKey="avgTime"
                                         stroke="#3b82f6"
                                         strokeWidth={2}
-                                        dot={{ fill: '#3b82f6', strokeWidth: 0 }}
-                                        activeDot={{ r: 6, fill: '#3b82f6' }}
+                                        dot={{ fill: '#3b82f6', strokeWidth: 0, r: 3 }}
+                                        activeDot={{ r: 5, fill: '#3b82f6', stroke: '#1e3a5f', strokeWidth: 2 }}
                                     />
                                 </LineChart>
                             </ResponsiveContainer>
@@ -211,40 +178,39 @@ export function Analytics() {
                     </CardContent>
                 </Card>
 
-                {/* High Risk Areas */}
                 <Card>
                     <CardHeader>
                         <CardTitle>High-Risk Areas</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px]">
+                        <div className="h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
                                     data={CROWD_DENSITY_ZONES}
                                     layout="vertical"
                                     margin={{ left: 20 }}
                                 >
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                     <XAxis
                                         type="number"
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                        stroke="#334155"
+                                        tick={{ fill: '#475569', fontSize: 10 }}
                                         domain={[0, 100]}
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <YAxis
                                         type="category"
                                         dataKey="name"
-                                        stroke="#64748b"
-                                        tick={{ fill: '#64748b', fontSize: 12 }}
-                                        width={120}
+                                        stroke="#334155"
+                                        tick={{ fill: '#64748b', fontSize: 10 }}
+                                        width={110}
+                                        tickLine={false}
+                                        axisLine={false}
                                     />
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                        }}
-                                        itemStyle={{ color: '#e2e8f0' }}
+                                        contentStyle={chartTooltipStyle}
+                                        itemStyle={chartItemStyle}
                                         formatter={(value) => [`${value}%`, 'Density']}
                                     />
                                     <Bar
@@ -260,6 +226,7 @@ export function Analytics() {
                                                         entry.risk === 'high' ? '#f97316' :
                                                             entry.risk === 'medium' ? '#eab308' : '#22c55e'
                                                 }
+                                                opacity={0.8}
                                             />
                                         ))}
                                     </Bar>

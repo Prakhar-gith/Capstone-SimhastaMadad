@@ -14,7 +14,6 @@ export function Dashboard() {
     const { alerts, simulateNewAlert, isSimulating } = useAlertsStore();
     const { addToast } = useToastStore();
 
-    // Simulate new alerts every 10 seconds
     useEffect(() => {
         if (!isSimulating) return;
 
@@ -38,72 +37,66 @@ export function Dashboard() {
     const activeAlerts = alerts.filter(a => a.status !== 'resolved');
 
     return (
-        <div className="space-y-4">
-            {/* Page Header */}
+        <div className="space-y-5">
             <div>
-                <h1 className="text-xl font-bold text-white">Dashboard Overview</h1>
-                <p className="text-sm text-slate-400">Real-time emergency monitoring for Simhastha 2028</p>
+                <h1 className="text-xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+                <p className="text-xs text-slate-500 mt-0.5">Real-time emergency monitoring for Simhastha 2028</p>
             </div>
 
-            {/* Stats Cards */}
             <StatsCards />
 
-            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Recent Alerts */}
                 <Card className="lg:col-span-2 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
-                        <CardTitle className="text-base">Recent Alerts</CardTitle>
+                        <CardTitle>Recent Alerts</CardTitle>
                         <Link to="/incidents">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs">
+                            <Button variant="ghost" size="sm" className="h-7 text-[11px] text-slate-500 hover:text-slate-300">
                                 View All <ArrowRight className="w-3 h-3 ml-1" />
                             </Button>
                         </Link>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="divide-y divide-slate-700/50">
+                        <div className="divide-y divide-white/[0.04]">
                             {recentAlerts.length === 0 ? (
-                                <div className="p-6 text-center text-slate-500 text-sm">
+                                <div className="p-8 text-center text-slate-600 text-sm">
                                     No alerts yet. System is monitoring...
                                 </div>
                             ) : (
-                                recentAlerts.map((alert) => {
+                                recentAlerts.map((alert, index) => {
                                     const emergencyType = EMERGENCY_TYPES.find(t => t.id === alert.emergency_type);
                                     return (
                                         <div
                                             key={alert.id}
-                                            className="p-3 hover:bg-slate-700/30 transition-colors"
+                                            className={`p-3 hover:bg-white/[0.02] transition-colors animate-fadeIn stagger-${index + 1}`}
                                         >
                                             <div className="flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                     <div
                                                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                                        style={{ backgroundColor: `${emergencyType?.color}20` }}
+                                                        style={{ backgroundColor: `${emergencyType?.color}12` }}
                                                     >
                                                         <span
-                                                            className="text-sm"
-                                                            style={{ color: emergencyType?.color }}
-                                                        >
-                                                            ⚠
-                                                        </span>
+                                                            className="w-2.5 h-2.5 rounded-full"
+                                                            style={{ backgroundColor: emergencyType?.color }}
+                                                        />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-sm font-medium text-slate-200 truncate">
+                                                            <span className="text-[13px] font-medium text-slate-200 truncate">
                                                                 {emergencyType?.label || 'Emergency'}
                                                             </span>
-                                                            <Badge variant={alert.priority} className="flex-shrink-0 text-xs">{alert.priority}</Badge>
+                                                            <Badge variant={alert.priority}>{alert.priority}</Badge>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                                                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
                                                             <MapPin className="w-3 h-3 flex-shrink-0" />
                                                             <span className="truncate">{alert.location_name}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
-                                                    <Badge variant={alert.status} className="text-xs">{alert.status.replace('_', ' ')}</Badge>
-                                                    <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-500 justify-end">
-                                                        <Clock className="w-3 h-3" />
+                                                    <Badge variant={alert.status}>{alert.status.replace('_', ' ')}</Badge>
+                                                    <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-600 justify-end font-mono">
+                                                        <Clock className="w-2.5 h-2.5" />
                                                         {formatRelativeTime(alert.timestamp)}
                                                     </div>
                                                 </div>
@@ -116,36 +109,37 @@ export function Dashboard() {
                     </CardContent>
                 </Card>
 
-                {/* Crowd Density */}
                 <Card className="overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
-                        <CardTitle className="text-base">Crowd Density</CardTitle>
+                        <CardTitle>Crowd Density</CardTitle>
                         <Link to="/map">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs">
+                            <Button variant="ghost" size="sm" className="h-7 text-[11px] text-slate-500 hover:text-slate-300">
                                 Map <ArrowRight className="w-3 h-3 ml-1" />
                             </Button>
                         </Link>
                     </CardHeader>
-                    <CardContent className="space-y-2.5 p-4 pt-0">
+                    <CardContent className="space-y-3 p-4 pt-2">
                         {CROWD_DENSITY_ZONES.map((zone) => (
-                            <div key={zone.id} className="space-y-1">
-                                <div className="flex items-center justify-between text-xs">
-                                    <span className="text-slate-300 truncate mr-2">{zone.name}</span>
-                                    <span className={`font-medium flex-shrink-0 ${zone.risk === 'critical' ? 'text-red-400' :
+                            <div key={zone.id} className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-slate-400 truncate mr-2">{zone.name}</span>
+                                    <span className={`font-mono font-medium flex-shrink-0 tabular-nums ${zone.risk === 'critical' ? 'text-red-400' :
                                             zone.risk === 'high' ? 'text-orange-400' :
-                                                zone.risk === 'medium' ? 'text-yellow-400' : 'text-green-400'
+                                                zone.risk === 'medium' ? 'text-yellow-400' : 'text-emerald-400'
                                         }`}>
                                         {zone.density}%
                                     </span>
                                 </div>
-                                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-500 ${zone.risk === 'critical' ? 'bg-gradient-to-r from-red-500 to-red-400' :
-                                                zone.risk === 'high' ? 'bg-gradient-to-r from-orange-500 to-orange-400' :
-                                                    zone.risk === 'medium' ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' :
-                                                        'bg-gradient-to-r from-green-500 to-green-400'
-                                            }`}
-                                        style={{ width: `${zone.density}%` }}
+                                        className="h-full rounded-full transition-all duration-700 ease-out"
+                                        style={{
+                                            width: `${zone.density}%`,
+                                            background: zone.risk === 'critical' ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                                                zone.risk === 'high' ? 'linear-gradient(90deg, #f97316, #fb923c)' :
+                                                    zone.risk === 'medium' ? 'linear-gradient(90deg, #eab308, #facc15)' :
+                                                        'linear-gradient(90deg, #10b981, #34d399)'
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -154,26 +148,23 @@ export function Dashboard() {
                 </Card>
             </div>
 
-            {/* System Status */}
-            <Card className="overflow-hidden">
-                <CardContent className="py-3 px-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                                <span className="text-slate-400">System Active</span>
-                            </div>
-                            <span className="text-slate-600 hidden sm:inline">|</span>
-                            <span className="text-slate-400 hidden sm:inline">
-                                {activeAlerts.length} active alerts monitored
-                            </span>
+            <div className="rounded-xl bg-[hsl(225,20%,10%)]/50 border border-white/[0.04] p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-statusPulse" />
+                            <span className="text-slate-500">System Active</span>
                         </div>
-                        <span className="text-slate-500">
-                            Demo • New alert every 10s
+                        <span className="text-slate-700 hidden sm:inline">|</span>
+                        <span className="text-slate-600 hidden sm:inline font-mono">
+                            {activeAlerts.length} alerts monitored
                         </span>
                     </div>
-                </CardContent>
-            </Card>
+                    <span className="text-slate-700 font-mono uppercase tracking-wider text-[10px]">
+                        Demo • Auto-simulation
+                    </span>
+                </div>
+            </div>
         </div>
     );
 }

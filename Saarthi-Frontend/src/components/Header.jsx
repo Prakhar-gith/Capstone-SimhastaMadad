@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAlertsStore } from '../store/alertsStore';
 import { Button } from './ui/Button';
@@ -23,94 +23,96 @@ export function Header({ onMenuClick }) {
     };
 
     return (
-        <header className="h-14 flex-shrink-0 bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 flex items-center justify-between px-3 lg:px-4">
-            {/* Left Section */}
-            <div className="flex items-center gap-2 min-w-0">
+        <header className="h-14 flex-shrink-0 bg-[hsl(225,20%,10%)]/80 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-3 lg:px-5">
+            <div className="flex items-center gap-3 min-w-0">
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden p-1.5 hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
+                    className="lg:hidden p-1.5 hover:bg-white/[0.06] rounded-lg transition-colors flex-shrink-0 text-slate-400"
                 >
                     <Menu className="w-5 h-5" />
                 </button>
 
-                <div className="flex items-center gap-2 min-w-0">
-                    {/* Logo/Brand */}
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-xs">S</span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
+                        <Shield className="w-4 h-4 text-white" />
                     </div>
                     <div className="hidden sm:block min-w-0">
-                        <h1 className="text-sm font-bold text-white leading-tight">Saarthi</h1>
-                        <p className="text-xs text-slate-400 truncate">Simhastha Madad</p>
+                        <h1 className="text-sm font-bold text-white leading-tight tracking-wide">SAARTHI</h1>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">Command Center</p>
                     </div>
                 </div>
             </div>
 
-            {/* Center - Time & Status */}
-            <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-                {/* Current Time */}
-                <div className="flex items-center gap-1.5 text-slate-300">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span className="font-mono text-xs">
+            <div className="hidden md:flex items-center gap-5 flex-shrink-0">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                    <Clock className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="font-mono text-xs text-slate-300 tabular-nums">
                         {formatTime(currentTime)} IST
                     </span>
                 </div>
 
-                {/* Network Status */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                     {networkStatus === 'online' ? (
                         <>
                             <div className="relative">
                                 <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-statusPulse" />
                             </div>
-                            <span className="text-xs text-emerald-400">Mesh Online</span>
+                            <span className="text-[11px] font-medium text-emerald-400">MESH ONLINE</span>
                         </>
                     ) : (
                         <>
                             <WifiOff className="w-3.5 h-3.5 text-red-400" />
-                            <span className="text-xs text-red-400">Mesh Offline</span>
+                            <span className="text-[11px] font-medium text-red-400">MESH OFFLINE</span>
                         </>
                     )}
                 </div>
 
-                {/* Mesh Health */}
-                <div className="flex items-center gap-1.5">
-                    <div className="w-12 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div className="flex items-center gap-2">
+                    <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-500"
-                            style={{ width: `${meshHealth}%` }}
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                                width: `${meshHealth}%`,
+                                background: meshHealth > 80
+                                    ? 'linear-gradient(90deg, #10b981, #34d399)'
+                                    : meshHealth > 50
+                                        ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                                        : 'linear-gradient(90deg, #ef4444, #f87171)'
+                            }}
                         />
                     </div>
-                    <span className="text-xs text-slate-300">{meshHealth}%</span>
+                    <span className="text-[11px] font-mono text-slate-400 tabular-nums">{meshHealth}%</span>
                 </div>
             </div>
 
-            {/* Right Section */}
             <div className="flex items-center gap-2 min-w-0">
-                {/* Last Sync */}
-                <span className="hidden lg:block text-xs text-slate-500 whitespace-nowrap">
-                    Last sync: {formatTime(lastSync)}
+                <span className="hidden lg:block text-[10px] text-slate-600 font-mono whitespace-nowrap">
+                    SYNC {formatTime(lastSync)}
                 </span>
 
-                {/* Refresh Button */}
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="h-7 px-2"
+                    className="h-8 w-8 p-0"
                     onClick={handleRefresh}
                     disabled={isRefreshing}
+                    title="Force sync"
                 >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline text-xs ml-1">Refresh</span>
                 </Button>
 
-                {/* User Info & Logout */}
-                <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-slate-700 min-w-0">
-                    <div className="text-right min-w-0">
-                        <p className="text-xs font-medium text-slate-200 truncate max-w-[100px]">{user?.name}</p>
-                        <p className="text-xs text-slate-500 truncate">{user?.role}</p>
+                <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-white/[0.06] min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center border border-blue-500/30 flex-shrink-0">
+                        <span className="text-[10px] font-bold text-blue-400">
+                            {user?.name?.charAt(0) || 'U'}
+                        </span>
                     </div>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={logout} title="Logout">
+                    <div className="text-right min-w-0 hidden md:block">
+                        <p className="text-xs font-medium text-slate-200 truncate max-w-[100px]">{user?.name}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{user?.role}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-500 hover:text-red-400" onClick={logout} title="Logout">
                         <LogOut className="w-3.5 h-3.5" />
                     </Button>
                 </div>

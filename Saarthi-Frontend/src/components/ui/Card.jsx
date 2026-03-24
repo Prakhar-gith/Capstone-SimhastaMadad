@@ -4,7 +4,7 @@ export function Card({ className, children, ...props }) {
     return (
         <div
             className={cn(
-                'rounded-xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 shadow-lg',
+                'rounded-xl bg-[hsl(225,20%,10%)]/70 backdrop-blur-sm border border-white/[0.06] shadow-lg shadow-black/20',
                 className
             )}
             {...props}
@@ -16,7 +16,7 @@ export function Card({ className, children, ...props }) {
 
 export function CardHeader({ className, children, ...props }) {
     return (
-        <div className={cn('px-5 py-4 border-b border-slate-700/50', className)} {...props}>
+        <div className={cn('px-5 py-4 border-b border-white/[0.06]', className)} {...props}>
             {children}
         </div>
     );
@@ -24,7 +24,7 @@ export function CardHeader({ className, children, ...props }) {
 
 export function CardTitle({ className, children, ...props }) {
     return (
-        <h3 className={cn('text-lg font-semibold text-slate-100', className)} {...props}>
+        <h3 className={cn('text-sm font-semibold text-slate-200 tracking-wide', className)} {...props}>
             {children}
         </h3>
     );
