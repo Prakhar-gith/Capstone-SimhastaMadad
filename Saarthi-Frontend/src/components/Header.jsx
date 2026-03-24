@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Shield, Search, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, Clock, LogOut, Menu, Search, Volume2, VolumeX } from 'lucide-react';
+import logoIcon from '../assets/logo-saarthi.png';
 import { useAuthStore } from '../store/authStore';
 import { useAlertsStore } from '../store/alertsStore';
 import { useAudioStore } from '../hooks/useAudioAlert';
@@ -35,8 +36,8 @@ export function Header({ onMenuClick, onSearchClick }) {
                 </button>
 
                 <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
-                        <Shield className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center flex-shrink-0 p-0.5">
+                        <img src={logoIcon} alt="Saarthi" className="w-full h-full object-contain" />
                     </div>
                     <div className="hidden sm:block min-w-0">
                         <h1 className="text-sm font-bold text-white leading-tight tracking-wide">SAARTHI</h1>

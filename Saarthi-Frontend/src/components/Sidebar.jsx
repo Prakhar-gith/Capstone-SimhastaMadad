@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import logoIcon from '../assets/logo-saarthi.png';
 import {
     LayoutDashboard,
     Map,
@@ -102,12 +103,15 @@ export function Sidebar({ isOpen, onClose }) {
                 </nav>
 
                 <div className="p-3 border-t border-white/[0.06] flex-shrink-0">
-                    <div className="text-[10px] text-slate-600">
-                        <p className="font-semibold text-slate-500 uppercase tracking-wider">Simhastha 2028</p>
-                        <p className="truncate mt-0.5">Ujjain, MP • v1.0.0</p>
-                        <p className="mt-1.5 text-slate-700">
-                            <kbd className="px-1 py-0.5 bg-white/[0.03] border border-white/[0.06] rounded font-mono">Ctrl+K</kbd> Search
-                        </p>
+                    <div className="flex items-start gap-2.5">
+                        <img src={logoIcon} alt="Saarthi" className="w-8 h-8 rounded-lg flex-shrink-0 object-contain opacity-60" />
+                        <div className="text-[10px] text-slate-600 min-w-0">
+                            <p className="font-semibold text-slate-500 uppercase tracking-wider">Simhastha 2028</p>
+                            <p className="truncate mt-0.5">Ujjain, MP • v1.0.0</p>
+                            <p className="mt-1.5 text-slate-700">
+                                <kbd className="px-1 py-0.5 bg-white/[0.03] border border-white/[0.06] rounded font-mono">Ctrl+K</kbd> Search
+                            </p>
+                        </div>
                     </div>
                 </div>
             </aside>

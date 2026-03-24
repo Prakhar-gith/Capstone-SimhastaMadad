@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Shield, ChevronDown } from 'lucide-react';
+import { User, Lock, ChevronDown } from 'lucide-react';
+import logoWithText from '../assets/logo and text.png';
 import { useAuthStore } from '../store/authStore';
 import { Button } from '../components/ui/Button';
 import { MOCK_USERS } from '../lib/mockData';
@@ -55,13 +56,10 @@ export function Login() {
             </div>
 
             <div className="w-full max-w-md relative animate-fadeIn">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 mb-5 shadow-2xl shadow-blue-500/30">
-                        <Shield className="w-8 h-8 text-white" />
+                <div className="text-center mb-8 flex justify-center">
+                    <div className="inline-flex items-center justify-center bg-white/90 rounded-2xl p-1 shadow-2xl shadow-blue-500/20">
+                        <img src={logoWithText} alt="Saarthi - Simhastha 2028 Emergency Command Center" className="h-48 object-contain" />
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-1.5 tracking-tight">SAARTHI</h1>
-                    <p className="text-sm text-slate-400">Simhastha Madad Command Center</p>
-                    <p className="text-[11px] text-slate-600 mt-1 uppercase tracking-widest">Ujjain 2028</p>
                 </div>
 
                 <div className="bg-[hsl(225,20%,10%)]/80 backdrop-blur-2xl rounded-2xl border border-white/[0.06] shadow-2xl shadow-black/40 p-8">
